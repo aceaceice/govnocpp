@@ -1,11 +1,14 @@
-#include "analyzeScreen.h"
-#include "screenCapture.h"
+#include <opencv2/opencv.hpp>
+#include <opencv2/stitching.hpp> 
 #include <X11/Xlib.h>
-#include <tesseract/baseapi.h>
 #include <X11/Xutil.h>
 #include "detection.h"
 #include <leptonica/allheaders.h>
+
+#include <png.h>
+#include <tesseract/baseapi.h>
 #include <iostream>
+
 
 XEvent getMouseLocation() {
     Display* display = XOpenDisplay(nullptr);
@@ -21,112 +24,66 @@ XEvent getMouseLocation() {
     return event;
 }
 
+
+
 DetectedWords analyzeScreen() {
+    // Load image using OpenCV
 
-    Pix* pix = takeScreenshot();
-    XEvent event = getMouseLocation();
-    std::cout << "Mouse coordinates: x = " << event.xbutton.x
-              << ", y = " << event.xbutton.y << std::endl;
+    Display* display = XOpenDisplay(NULL);
+    Window root = DefaultRootWindow(display);
+    XWindowAttributes windowAttributes;
+    XGetWindowAttributes(display, root, &windowAttributes);
+    int width = windowAttributes.width;
+    int height = windowAttributes.height;
+XImage* imageX = XGetImage(display, root, 0, 0, width, height, AllPlanes, ZPixmap);
 
-    l_uint32 pixel;
-    int x = 1;  // X-coordinate of the pixel
-    int y = 1;  // Y-coordinate of the pixel
+// Create an OpenCV Mat object from the XImage data
+cv::Mat image(height, width, CV_8UC4, imageX->data);
 
-    if (pix!=NULL) {
-    // The pix image is valid
     
-        std::cout<<"yes" <<std::endl;
-    // You can proceed with pixel access and other operations
-    // ...
-} else {
-    // The pix image is invalid
-    // Handle the error case or return
-        std::cout<<"nooooooo" <<std::endl;
-    // ...
-}
+    // Convert image to grayscale
+    cv::Mat grayImage;
+    cv::cvtColor(image, grayImage, cv::COLOR_BGR2GRAY);
     
-    if (pixGetPixel(pix, x, y, &pixel)) {
-        // The pixel value is stored in 'pixel'
-        // You can perform operations or access its components
-        // For example, you can get the red, green, blue components using the following masks:
-        int red = GET_DATA_BYTE(&pixel, COLOR_RED);
-        int green = GET_DATA_BYTE(&pixel, COLOR_GREEN);
-        int blue = GET_DATA_BYTE(&pixel, COLOR_BLUE);
-        std::cout << red << "   " << green << "    " << blue << "  pixold"<<std::endl;
-        // Do something with the pixel values
-        // ...
-    } else {
-        std::cout<<"fuccckkk" <<std::endl;
-        // Failed to get the pixel value
-        // Handle the error case
-    }
-
-
-
-    Pix* pixGray = pixConvertRGBToGray(pix, 0.21, 0.72, 0.07);
-    savePixToFile(pix, "output.png");
-    // cv::cvtColor(screenshot, screenshot, cv::COLOR_BGR2GRAY);
-    // const unsigned char* image = reinterpret_cast<const unsigned char*>(screenshot.data);
-    // std::memcpy(const_cast<unsigned char*>(image), screenshot.data, screenshot.total());
-    // std::ofstream outfile("output.txt");
-    // std::streambuf* coutbuf = std::cout.rdbuf();
-    tesseract::TessBaseAPI api;
-
-    api.Init(NULL, "eng", tesseract::OEM_DEFAULT);
-    api.SetPageSegMode(tesseract::PSM_AUTO);
-
-    // // Set the image
-    api.SetImage(pix);
-    char* recognizedText = api.GetUTF8Text();
+    // Apply thresholding
+    cv::Mat thresholdedImage;
+    cv::threshold(grayImage, thresholdedImage, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
     
-    // // Process the recognized text
-    // std::cout << "Recognized text: " << recognizedText << std::endl;
-    // // cv::Mat imageMat(screenshot.rows, screenshot.cols, CV_8UC1, const_cast<unsigned char*>(image));
-    // // cv::imshow("Gowno", imageMat);
-    // // Get the recognized words and their bounding boxes
-    tesseract::ResultIterator* iter = api.GetIterator();
-    std::cout << "Shoigu! Gerasimov!" << (iter==NULL) << std::endl;
-    tesseract::PageIteratorLevel level = tesseract::RIL_WORD;
-    std::cout << "Shoigu! Gerasimov!" << (iter==NULL) << std::endl;
-    // // CGEventRef event = CGEventCreate(NULL);
-    // // CGPoint cursorPos = CGEventGetLocation(event);
-    // // CFRelease(event);
+    // Create Tesseract OCR object
+    tesseract::TessBaseAPI ocr;
+    ocr.Init(NULL, "eng"); // Set language ("eng" for English)
+    ocr.SetImage(thresholdedImage.data, thresholdedImage.cols, thresholdedImage.rows, 1, thresholdedImage.cols);
+    
+    // Perform OCR
+    ocr.Recognize(0);
+    tesseract::ResultIterator* iterator = ocr.GetIterator();
+    
+    std::string recognizedText;
+    float confidence;
     DetectedWords recWords = DetectedWords();
-    int a = 0;
+    int i = 0;
+    while (iterator->Next(tesseract::RIL_WORD)) {
+        const char* word = iterator->GetUTF8Text(tesseract::RIL_WORD);
+        float conf = iterator->Confidence(tesseract::RIL_WORD);
+        int x1, y1, x2, y2;
+        
+        iterator->BoundingBox(tesseract::RIL_WORD, &x1, &y1, &x2, &y2);
+        if (word != nullptr && conf > 0.2) {
+            recWords.addWord(word, conf, x1,x2,y1,y2);
+            // std::cout<< word << " " << i << " " << y1 << " " << y2 << std::endl;
 
-    if (iter != NULL) {
-        do {
-
-            const char* word = iter->GetUTF8Text(level);
-            float confidence = iter->Confidence(level);
-            if (confidence > 0.3) {
-            // std::cout << &recWords << std::endl;
-            int x1, y1, x2, y2;
-            iter->BoundingBox(level, &x1, &y1, &x2, &y2);
-            recWords.addWord(word, confidence, x1,x2,y1,y2);
-            a++;
-            // if (x1 < event.xbutton.x && x2 > event.xbutton.x && y1 < event.xbutton.y && y2 > event.xbutton.y){
-            //     std::cout << "Found shit: 123" << std::endl;
-            //     recWords.selectWord(a); 
-            //     Coordinates cords = recWords.getBoundingBox(a);
-            //     std::cout << "Bounding x:   " << cords.x1 << std::endl;
-            // }
-            // std::cout << "Length: " << recWords.recognizedWords.size() << std::endl; 
-            // std::cout << "Word: " << recWords.recognizedWords[a].word << std::endl; 
-            // std::cout << x1 << " " << y1 << " " << x2 << " " << word << std::endl;    
-    // Print the coordinates
-            // std::cout << "Shoigu! Gerasimov!" << x1 << std::endl;
-            // Draw a rectangle around the recognized word
-            // std::cout << "Recognized word: " << word << " (confidence: " << confidence << ")" << std::endl;
-            }
-            
             delete[] word;
-        } while (iter->Next(level));
+            ++i;
+        }
     }
-    // cv::imshow("res", screenshot);
-    // Clean up
-    delete iter;
-    api.End();
-    // cv::waitKey(0);
+    
+    // Print recognized text and confidence
+    
+    // Save the image with bounding boxes
+    // cv::imwrite("output.jpg", image);
+    // Release resources
+    ocr.Clear();
+    ocr.End();
+    
     return recWords;
 }

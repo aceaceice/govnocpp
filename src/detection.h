@@ -1,6 +1,7 @@
 #ifndef DETECTION_H
 #define DETECTION_H
 #include <vector>
+#include <string>
 
 class Coordinates {
     public: 
@@ -15,7 +16,7 @@ class Coordinates {
 class RecognizedWord {
     public: 
         Coordinates position;
-        const char* word;
+        std::string word;
         float confidence;
 
         RecognizedWord(const char* word, float confidence, int x1, int x2, int y1, int y2);
@@ -28,11 +29,11 @@ class DetectedWords{
 
     void addWord(const char* word, float confidence, int x1, int x2, int y1, int y2);
     RecognizedWord selectPrev();
-    void selectNext();
+    RecognizedWord selectNext();
     void selectWord(int id);
     bool checkCursorMatch(int x, int y, RecognizedWord recWord);
-
-    int findMatchingWord(int x, int y);
+    std::string translateSelected();
+    RecognizedWord findMatchingWord(int x, int y);
 
     Coordinates getBoundingBox(int id);
 };;
