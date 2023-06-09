@@ -37,14 +37,6 @@ void drawBoundingBox(int x1, int y1, int x2, int y2) {
     glPushMatrix();
     glLoadIdentity();
     
-    // Calculate the correct width and height based on the given coordinates
-    int width = abs(x2 - x1);
-    int height = abs(y2 - y1);
-    
-    // Determine the starting point for drawing the rectangle
-    int startX = std::min(x1, x2);
-    int startY = std::min(y1, y2);
-    
     // Draw the bounding box
     glColor3f(1.0f, 0.0f, 0.0f); // Red color
     glBegin(GL_LINE_LOOP);
@@ -64,34 +56,6 @@ void drawBoundingBox(int x1, int y1, int x2, int y2) {
 
 typedef struct {DetectedWords* recWords;} RecognizedWordData;
 
-void renderText(GLFWwindow* window, const char* text, float x, float y, float scale)
-{
-    int width, height;
-    glfwGetWindowSize(window, &width, &height);
-
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    glOrtho(0, width, 0, height, -1, 1);
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-
-    glTranslatef(x, y, 0);
-    glScalef(scale, scale, 1.0f);
-
-    glColor3f(0.0f, 0.0f, 0.0f);
-    glfwSetWindowTitle(window, text);
-
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-}
-
-void dupa(){
-    std::cout << "sdasdsadasd" << std::endl;
-}
 
 struct DialogData {
     const char* text;
@@ -338,7 +302,11 @@ if (font == NULL) {
     // Loop until the user closes the window
 while (!glfwWindowShouldClose(window) && !shouldExit)
 {
-
+    // Make the OpenGL context of the window current
+    glfwMakeContextCurrent(window);
+    for(int i = 0; i < recWords.selectedWords.size(); i++){
+        drawBoundingBox(recWords.selectedWords[i].position.x1, recWords.selectedWords[i].position.y1, recWords.selectedWords[i].position.x2, recWords.selectedWords[i].position.y2);
+    }
 
         renderImGuiWindow(font);
         // Swap front and back buffers
@@ -416,7 +384,7 @@ while (true) {
             KeyCode ctrlKeyCode = XKeysymToKeycode(display, XK_Control_L);
             KeyCode dotKeyCode = XKeysymToKeycode(display, XK_period);
 
-            if (keycode == ctrlKeyCode && (xievent->mods.effective & ControlMask)) {
+            if (keycode == ctrlKeyCode &&  (xievent->mods.effective & ControlMask)) {
                 // Key combination Ctrl+. is pressed
                 // Handle the specific key combination here
                 std::cout << "Ctrl+. is pressed" << std::endl;

@@ -3,6 +3,9 @@
 #include "detection.h"
 #include <string>
 #include "translator.h"
+
+
+
 Coordinates::Coordinates(int x1, int x2, int y1, int y2) : x1(x1), x2(x2), y1(y1), y2(y2) {}
 
 RecognizedWord::RecognizedWord(const char* word, float confidence, int x1, int x2, int y1, int y2)
@@ -42,7 +45,7 @@ void DetectedWords::selectWord(int id){
     }
 std::string DetectedWords::translateSelected(){
     std::string sentence;
-    for (int i=0; i<selectedWordIds.size(); ++i){
+    for (std::vector<int>::size_type i=0; i<selectedWordIds.size(); ++i){
         int id = selectedWordIds[i];
         sentence += recognizedWords[id].word + " ";
         
@@ -58,12 +61,16 @@ bool DetectedWords::checkCursorMatch(int x, int y, RecognizedWord recWord){
     }
 
 RecognizedWord DetectedWords::findMatchingWord(int x, int y){
-        for(int i = 0; i<recognizedWords.size(); ++i){
+        for(std::vector<int>::size_type i = 0; i<recognizedWords.size(); ++i){
             if(checkCursorMatch(x,y,recognizedWords[i])){
                 std::cout<< "The shit is: " << selectedWordIds.size() << std::endl;
                 selectedWordIds.push_back(i);
-                std::cout<< "The shit is: " << selectedBoundingBoxes.size() << std::endl;
+                std::cout<< "The shit is: " << selectedWords.size() << std::endl;
+                // std::vector<RecognizedWord> selectedWords;
                 // selectedBoundingBoxes.push_back(recognizedWords[i].position);
+                RecognizedWord das = recognizedWords[i];
+                selectedWords.push_back(das);
+                std::cout<<selectedWords[0].word << std::endl;
                 std::cout<< "The word is: " << recognizedWords[i].position.x1 << std::endl;
                 return recognizedWords[i];
             }

@@ -6,7 +6,7 @@
 
 void saveXImageAsPNG(XImage* ximage, const std::string& filename);
 
-void savePixToFile(Pix* pix, const std::string& filename) ;
+void savePixToFile(Pix* pix, const std::string& filename);
 
 Pix* ximageToPix(XImage* ximage);
 

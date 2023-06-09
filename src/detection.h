@@ -11,7 +11,7 @@ class Coordinates {
         int y2;
 
         Coordinates(int x1, int x2, int y1, int y2);
-};;
+};
 
 class RecognizedWord {
     public: 
@@ -27,7 +27,7 @@ class DetectedWords{
         std::vector<int> selectedWordIds;
         const char* translationText;
         std::vector<RecognizedWord> recognizedWords;
-        std::vector<Coordinates> selectedBoundingBoxes;
+        std::vector<RecognizedWord> selectedWords;
     
     void addWord(const char* word, float confidence, int x1, int x2, int y1, int y2);
     RecognizedWord selectPrev();
@@ -38,5 +38,5 @@ class DetectedWords{
     RecognizedWord findMatchingWord(int x, int y);
 
     Coordinates getBoundingBox(int id);
-};;
+};
 #endif
