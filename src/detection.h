@@ -25,8 +25,10 @@ class RecognizedWord {
 class DetectedWords{
     public:
         std::vector<int> selectedWordIds;
+        const char* translationText;
         std::vector<RecognizedWord> recognizedWords;
-
+        std::vector<Coordinates> selectedBoundingBoxes;
+    
     void addWord(const char* word, float confidence, int x1, int x2, int y1, int y2);
     RecognizedWord selectPrev();
     RecognizedWord selectNext();

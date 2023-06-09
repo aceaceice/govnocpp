@@ -36,6 +36,7 @@ RecognizedWord DetectedWords::selectNext(){
 void DetectedWords::selectWord(int id){
         std::cout << id << " wtf " << std::endl;
         selectedWordIds.push_back(id);
+        std::cout<< recognizedWords[id].position.x1 << "sdasd as  asd as" << std::endl;
         std::cout << selectedWordIds[0] << " is it even a thing? " <<selectedWordIds.size() << std::endl;
         
     }
@@ -59,8 +60,11 @@ bool DetectedWords::checkCursorMatch(int x, int y, RecognizedWord recWord){
 RecognizedWord DetectedWords::findMatchingWord(int x, int y){
         for(int i = 0; i<recognizedWords.size(); ++i){
             if(checkCursorMatch(x,y,recognizedWords[i])){
+                std::cout<< "The shit is: " << selectedWordIds.size() << std::endl;
                 selectedWordIds.push_back(i);
-
+                std::cout<< "The shit is: " << selectedBoundingBoxes.size() << std::endl;
+                // selectedBoundingBoxes.push_back(recognizedWords[i].position);
+                std::cout<< "The word is: " << recognizedWords[i].position.x1 << std::endl;
                 return recognizedWords[i];
             }
         }
