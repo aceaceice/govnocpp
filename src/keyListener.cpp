@@ -10,7 +10,8 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/extensions/XInput2.h>
-    
+#include <iostream>
+
 void startKeyListener() {
     // Open the display connection
     Display* display = XOpenDisplay(nullptr);
@@ -76,7 +77,6 @@ while (true) {
 
     // Close the display connection
     XCloseDisplay(display);
-    return 0;
 }
 
 #elif __APPLE__

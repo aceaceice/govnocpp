@@ -101,20 +101,33 @@
 #include <tesseract/baseapi.h>
 #include <iostream>
 
+char* tessdata = "TESSDATA_PREFIX=/home/jasos/govnocpp/tessdata";
 
-XEvent getMouseLocation() {
-    Display* display = XOpenDisplay(nullptr);
+cv::Mat takeScreenshot() {
+        // Load image using OpenCV
+
+    Display* display = XOpenDisplay(NULL);
     Window root = DefaultRootWindow(display);
+    XWindowAttributes windowAttributes;
+    XGetWindowAttributes(display, root, &windowAttributes);
+    int width = windowAttributes.width;
+    int height = windowAttributes.height;
+XImage* imageX = XGetImage(display, root, 0, 0, width, height, AllPlanes, ZPixmap);
 
-    XEvent event;
-    XQueryPointer(display, root, &event.xbutton.root, &event.xbutton.window,
-                  &event.xbutton.x_root, &event.xbutton.y_root,
-                  &event.xbutton.x, &event.xbutton.y,
-                  &event.xbutton.state);
+// Create an OpenCV Mat object from the XImage data
+cv::Mat image(height, width, CV_8UC4, imageX->data);
 
-    XCloseDisplay(display);
-    return event;
+    
+    // Convert image to grayscale
+    cv::Mat grayImage;
+    cv::cvtColor(image, grayImage, cv::COLOR_BGR2GRAY);
+    
+    // Apply thresholding
+    cv::Mat thresholdedImage;
+    cv::threshold(grayImage, thresholdedImage, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+    return thresholdedImage;
 }
+
 
 
 #elif __APPLE__
@@ -122,10 +135,11 @@ XEvent getMouseLocation() {
 #define GL_SILENCE_DEPRECATION
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include <ApplicationServices/ApplicationServices.h>
+#include <ApplicationServices/ApplicationServices.h> 
 #include <tesseract/baseapi.h>
 #include <fstream>
 #include "detection.h"
+    char* tessdata = "TESSDATA_PREFIX=/Users/jasos/Workspace/govnocpp/tessdata";
 
 cv::Mat takeScreenshot() {
     CGImageRef image = CGDisplayCreateImage(CGMainDisplayID());
@@ -137,6 +151,7 @@ cv::Mat takeScreenshot() {
     CGContextRelease(contextRef);
     CGImageRelease(image);
     cv::cvtColor(screenshot, screenshot, cv::COLOR_RGBA2BGR);
+    cv::cvtColor(screenshot, screenshot, cv::COLOR_BGR2GRAY);
     return screenshot;
 }
 
@@ -144,18 +159,19 @@ cv::Mat takeScreenshot() {
 
 DetectedWords analyzeScreen() {
     cv::Mat screenshot = takeScreenshot();
-    cv::cvtColor(screenshot, screenshot, cv::COLOR_BGR2GRAY);
     const unsigned char* image = reinterpret_cast<const unsigned char*>(screenshot.data);
     std::memcpy(const_cast<unsigned char*>(image), screenshot.data, screenshot.total());
     std::streambuf* coutbuf = std::cout.rdbuf();
-    putenv("TESSDATA_PREFIX=/Users/jasos/Workspace/govnocpp/tessdata");
+    putenv(tessdata);
     tesseract::TessBaseAPI api;
     api.Init(NULL, "pol", tesseract::OEM_DEFAULT);
     api.SetPageSegMode(tesseract::PSM_AUTO);
     // Set the image
-    api.SetImage(image, screenshot.cols, screenshot.rows, 1, screenshot.step);
-    api.GetUTF8Text();
+    api.SetImage(screenshot.data, screenshot.cols, screenshot.rows, 1, screenshot.cols);
 
+    // api.SetImage(image, screenshot.cols, screenshot.rows, 1, screenshot.step);
+    api.GetUTF8Text();
+    std::cout << "api.GetUTF8Text()" << std::endl;
     DetectedWords recWords = DetectedWords();
     
     // Process the recognized text
@@ -166,7 +182,8 @@ DetectedWords analyzeScreen() {
 
     if (iter != NULL) {
         do {
-            float scale = 1440/(float)screenshot.cols;
+            // float scale = 1440/(float)screenshot.cols;
+            float scale = 1;
             const char* word = iter->GetUTF8Text(level);
             float confidence = iter->Confidence(level);
             int x1, y1, x2, y2;

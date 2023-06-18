@@ -19,7 +19,7 @@ void drawBoundingBox(int x1, int y1, int x2, int y2) {
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glLoadIdentity();
-    glOrtho(0, 1440, 900, 0, -1, 1); // Replace with your window size
+    glOrtho(0, 2560, 1440, 0, -1, 1); // Replace with your window size
     
     // Set up the modelview matrix to draw in 2D
     glMatrixMode(GL_MODELVIEW);
@@ -52,7 +52,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     if (action == GLFW_PRESS) {
         switch(key) {
             case GLFW_KEY_SEMICOLON: {
-                Cursor cursor = getCursorPosition();  
+                MousePosition cursor = getCursorPosition();  
                 try {
                 recWords.findMatchingWord(cursor.x, cursor.y);
                 } catch (const std::exception& e) {
@@ -78,7 +78,12 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
 }
 
+void errorCallback(int error, const char* description)
+{
+    printf("GLFW Error %d: %s\n", error, description);
+}
 
+// Set the error callback
 int run_detection() { 
     
     shouldExit = false;
@@ -92,21 +97,30 @@ int run_detection() {
     // Initialize GLFW
     if (!glfwInit())
         return -1;
+glfwSetErrorCallback(errorCallback);
     
     glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
     glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
     // Retrieve the primary monitor
     GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
 
-
+    
 
     // Create a GLFW window
     // GLFWwindow* window = glfwCreateWindow(2560, 1440, "Keyboard Events", NULL, NULL);
     const GLFWvidmode* videoMode = glfwGetVideoMode(primaryMonitor);
-
+    std::cout << videoMode->width << " " << videoMode->height << std::endl;
+    std::cout << primaryMonitor << std::endl;
     GLFWwindow* window = glfwCreateWindow(videoMode->width, videoMode->height, "Fullscreen Window", primaryMonitor, NULL);
+    std::cout << "GLFW window created" << std::endl;
+    std::cout << window << std::endl;
+    if(!window){
+        std::cout << "Failed to create GLFW window" << std::endl;
+    }
     glfwSetWindowUserPointer(window, &recWordsData);
+    std::cout << "GLFW window created" << std::endl;
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    std::cout << videoMode->width << " " << videoMode->height << std::endl;
     if (!window)
     {
         glfwTerminate();
@@ -115,14 +129,15 @@ int run_detection() {
      glfwSetKeyCallback(window, keyCallback);
     // Make the OpenGL context of the window current
     glfwMakeContextCurrent(window);
-
+    std::cout << "GLFW initialized" << std::endl;
     glewExperimental = GL_TRUE; 
     if (glewInit() != GLEW_OK)
     {
         std::cout << "Failed to initialize GLEW" << std::endl;
         return -1;
     }
-    const char* fontPath = "/System/Library/Fonts/Supplemental/Arial.ttf";
+    // const char* fontPath = "/System/Library/Fonts/Supplemental/Arial.ttf";
+    const char* fontPath = "/usr/share/fonts/TTF/DejaVuSans.ttf";
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;

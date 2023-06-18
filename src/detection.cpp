@@ -58,6 +58,7 @@ void DetectedWords::findMatchingWord(int x, int y){
     }
 void DetectedWords::clearSelected(){
         selectedWords.clear();
+        selectedText = "";
     }
 void DetectedWords::updateSelectedText(const std::string& text){
         selectedText = text;

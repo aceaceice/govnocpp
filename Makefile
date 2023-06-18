@@ -87,7 +87,7 @@ SRC_DIR = src
 BUILD_DIR = build/debug
 IMGUI_BUILD_DIR = $(BUILD_DIR)/imgui
 CC = g++
-
+INCLUDE_DIR = /usr/
 # Your additional compiler
 OBJCXX = g++
 
@@ -114,22 +114,20 @@ backends/imgui_impl_opengl3.cpp
 IMGUI_OBJ_FILES = $(patsubst %.cpp,$(IMGUI_BUILD_DIR)/%.o,$(IMGUI_SRC_FILES))
 
 OBJ_NAME = play
-INCLUDE_PATHS = -Iimgui -Iimgui/backends/ -I/opt/homebrew/opt/opencv/include/opencv4/ $(foreach dir, $(wildcard /opt/homebrew/opt/*/include), -I$(dir))
-LIBRARY_PATHS =  $(foreach dir, $(wildcard /opt/homebrew/opt/*/lib), -L$(dir))
-
+# INCLUDE_PATHS = -Iimgui -Iimgui/backends/ -I/opt/homebrew/opt/opencv/include/opencv4/ $(foreach dir, $(wildcard /opt/homebrew/opt/*/include), -I$(dir))
+# LIBRARY_PATHS =  $(foreach dir, $(wildcard /opt/homebrew/opt/*/lib), -L$(dir))
+INCLUDE_PATHS = -Iinclude -I/usr/include/opencv4/ -Iimgui -Iimgui/backends/
+LIBRARY_PATHS = -Llib -L/usr/lib
 COMPILER_FLAGS = -std=c++14 -Wall -O0 -g -Wno-deprecated-declarations
-LINKER_FLAGS = -llept -lcpprest -lssl -lcrypto -lcurl -lXext -lpng -lglfw -ltesseract -framework ApplicationServices -framework OpenGL  `pkg-config --cflags --libs opencv4 glew` -lhdf5 
+# LINKER_FLAGS = -llept -lcpprest -lssl -lcrypto -lcurl -lXext -lpng -lglfw -ltesseract -framework ApplicationServices -framework OpenGL  `pkg-config --cflags --libs opencv4 glew` -lhdf5 
+LINKER_FLAGS = -lleptonica -lcpprest -lssl -lcrypto -lcurl -lXext -lpng -lglfw -lX11 -lXi -ltesseract `pkg-config --cflags --libs opencv4 glew` -lhdf5
 
 # $(BUILD_DIR)/$(OBJ_NAME): $(MY_OBJ_FILES) $(IMGUI_OBJ_FILES)
 # 	$(CC) $(MY_OBJ_FILES) $(IMGUI_OBJ_FILES) $(LIBRARY_PATHS) $(LINKER_FLAGS) -o $@
 
 
-$(BUILD_DIR)/$(OBJ_NAME): $(MY_OBJ_FILES) $(MY_MM_OBJ_FILES) $(IMGUI_OBJ_FILES)
-	$(CC) $(MY_OBJ_FILES) $(MY_MM_OBJ_FILES) $(IMGUI_OBJ_FILES) $(LIBRARY_PATHS) $(LINKER_FLAGS) $(OBJCXX_LINKER_FLAGS) -o $@
-
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.mm
-	mkdir -p $(dir $@)
-	$(OBJCXX) $(OBJCXX_COMPILER_FLAGS) $(INCLUDE_PATHS) -c $< -o $@
+$(BUILD_DIR)/$(OBJ_NAME): $(MY_OBJ_FILES) $(IMGUI_OBJ_FILES)
+	$(CC) $(MY_OBJ_FILES) $(IMGUI_OBJ_FILES) $(LIBRARY_PATHS) $(LINKER_FLAGS) -o $@
 
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
