@@ -33,5 +33,6 @@ std::string translate(std::string sentence) {
         })
         .wait();
     translatedText = sentence + " -> " + translatedText;
+    std::cout << translatedText << std::endl;
     return translatedText;
 }

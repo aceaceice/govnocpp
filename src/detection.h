@@ -15,28 +15,30 @@ class Coordinates {
 
 class RecognizedWord {
     public: 
-        Coordinates position;
         std::string word;
         float confidence;
+        int id;
+        Coordinates position;
 
-        RecognizedWord(const char* word, float confidence, int x1, int x2, int y1, int y2);
+        RecognizedWord(const char* word, float confidence, int id, int x1, int x2, int y1, int y2);
 };
 
 class DetectedWords{
     public:
-        std::vector<int> selectedWordIds;
-        const char* translationText;
+        std::string translationText;
+        std::string detectionError;
+        std::string selectedText;
         std::vector<RecognizedWord> recognizedWords;
         std::vector<RecognizedWord> selectedWords;
+        bool shouldExit;
     
-    void addWord(const char* word, float confidence, int x1, int x2, int y1, int y2);
-    RecognizedWord selectPrev();
-    RecognizedWord selectNext();
-    void selectWord(int id);
+    void addWord(const char* word, float confidence, int id, int x1, int x2, int y1, int y2);
+    void selectPrev();
+    void selectNext();
+    void updateSelectedText(const std::string& text);
     bool checkCursorMatch(int x, int y, RecognizedWord recWord);
-    std::string translateSelected();
-    RecognizedWord findMatchingWord(int x, int y);
-
-    Coordinates getBoundingBox(int id);
+    void translateSelected();
+    void findMatchingWord(int x, int y);
+    void clearSelected();
 };
 #endif
