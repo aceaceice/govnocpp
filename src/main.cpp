@@ -2,8 +2,8 @@
 #include "keyListener.h"
 
 int main() {
-    run_detection();
-    // startKeyListener();
+    // run_detection();
+    startKeyListener();
     return 0;
 }
 

@@ -22,7 +22,7 @@ void renderImGuiWindow(ImFont* font, DetectedWords* recWordsPtr)
     //     static char textBuffer[256] = ""; // Buffer to store the input text
 
     std::string str = recWordsPtr->selectedText;
-char buffer[256];
+char buffer[512];
 
 str.copy(buffer, str.size() + 1);
 buffer[str.size()] = '\0'; // Ensure null-terminated

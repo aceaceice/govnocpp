@@ -48,28 +48,27 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     RecognizedWordData* recWordsData = static_cast<RecognizedWordData*>(glfwGetWindowUserPointer(window));
     DetectedWords* recWordsPtr = recWordsData->recWords;
     DetectedWords& recWords = *recWordsPtr;
-
-    if (action == GLFW_PRESS) {
+     bool super_pressed = mods & GLFW_MOD_SUPER;
+    if (action == GLFW_PRESS && super_pressed) {
         switch(key) {
-            case GLFW_KEY_SEMICOLON: {
-                Cursor cursor = getCursorPosition();  
+            case GLFW_KEY_E: {
+                MousePosition cursor = getCursorPosition();  
                 try {
                 recWords.findMatchingWord(cursor.x, cursor.y);
                 } catch (const std::exception& e) {
-                    // std::cout << e.what() << std::endl;
+                    std::cout << e.what() << std::endl;
                 }
             }
-
             break;
-            case GLFW_KEY_LEFT_BRACKET: {
+            case GLFW_KEY_W: {
                 recWords.selectPrev();            
             }
             break;
-            case GLFW_KEY_RIGHT_BRACKET: { 
+            case GLFW_KEY_R: { 
                 recWords.selectNext();
             }
             break;
-            case GLFW_KEY_ENTER: {
+            case GLFW_KEY_T: {
                 recWords.translateSelected();
             }
             break;
@@ -78,7 +77,12 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
 }
 
+void errorCallback(int error, const char* description)
+{
+    printf("GLFW Error %d: %s\n", error, description);
+}
 
+// Set the error callback
 int run_detection() { 
     
     shouldExit = false;
@@ -92,21 +96,30 @@ int run_detection() {
     // Initialize GLFW
     if (!glfwInit())
         return -1;
+glfwSetErrorCallback(errorCallback);
     
     glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
     glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
     // Retrieve the primary monitor
     GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
 
-
+    
 
     // Create a GLFW window
     // GLFWwindow* window = glfwCreateWindow(2560, 1440, "Keyboard Events", NULL, NULL);
     const GLFWvidmode* videoMode = glfwGetVideoMode(primaryMonitor);
-
+    std::cout << videoMode->width << " " << videoMode->height << std::endl;
+    std::cout << primaryMonitor << std::endl;
     GLFWwindow* window = glfwCreateWindow(videoMode->width, videoMode->height, "Fullscreen Window", primaryMonitor, NULL);
+    std::cout << "GLFW window created" << std::endl;
+    std::cout << window << std::endl;
+    if(!window){
+        std::cout << "Failed to create GLFW window" << std::endl;
+    }
     glfwSetWindowUserPointer(window, &recWordsData);
+    std::cout << "GLFW window created" << std::endl;
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    std::cout << videoMode->width << " " << videoMode->height << std::endl;
     if (!window)
     {
         glfwTerminate();
@@ -115,14 +128,15 @@ int run_detection() {
      glfwSetKeyCallback(window, keyCallback);
     // Make the OpenGL context of the window current
     glfwMakeContextCurrent(window);
-
+    std::cout << "GLFW initialized" << std::endl;
     glewExperimental = GL_TRUE; 
     if (glewInit() != GLEW_OK)
     {
         std::cout << "Failed to initialize GLEW" << std::endl;
         return -1;
     }
-    const char* fontPath = "/System/Library/Fonts/Supplemental/Arial.ttf";
+    // const char* fontPath = "/System/Library/Fonts/Supplemental/Arial.ttf";
+    const char* fontPath = "./Arial.ttf";
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;

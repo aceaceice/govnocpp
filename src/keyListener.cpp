@@ -10,7 +10,8 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/extensions/XInput2.h>
-    
+#include <iostream>
+
 void startKeyListener() {
     // Open the display connection
     Display* display = XOpenDisplay(nullptr);
@@ -65,7 +66,12 @@ while (true) {
                 // Key combination Ctrl+. is pressed
                 // Handle the specific key combination here
                 std::cout << "Ctrl+. is pressed" << std::endl;
+                try{
+
                 run_detection();
+                } catch (const std::exception& e) {
+                    std::cout << e.what() << std::endl;
+                }
             }
             // Free the event data
             XFreeEventData(display, &xevent.xcookie);
@@ -76,38 +82,25 @@ while (true) {
 
     // Close the display connection
     XCloseDisplay(display);
-    return 0;
 }
 
 #elif __APPLE__
 
-#include <thread>
-#import <Cocoa/Cocoa.h>
 #include "keyListener.h"
 #include <iostream>
 
 
 void startKeyListener() {
-__block BOOL shouldIgnoreKeyEvents = NO;
-    @autoreleasepool {
-        NSApplication* app = [NSApplication sharedApplication];
-    run_detection();
-
-        NSEventMask eventMask = NSEventMaskKeyDown;
-        [NSEvent addGlobalMonitorForEventsMatchingMask:eventMask handler:^(NSEvent* event) {
-            if (shouldIgnoreKeyEvents) return;
-                std::cout << "Ctrl + F is pressed" << std::endl;
-
-            if (([event modifierFlags] & NSEventModifierFlagControl) && [event keyCode] == 0x03) {  // 0x03 is 'F' key
-                std::cout << "Ctrl + F is pressed" << std::endl;
-                shouldIgnoreKeyEvents = YES;
-                run_detection();
-                shouldIgnoreKeyEvents = NO;
-            }
-        }];
-
-        [app run];
+    try
+    {
+run_detection();
+        /* code */
     }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+    
 }
 
 

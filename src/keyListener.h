@@ -1,9 +1,6 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef KEYLISTENER_H
+#define KEYLISTENER_H
 
 void startKeyListener();
 
-#ifdef __cplusplus
-}
 #endif

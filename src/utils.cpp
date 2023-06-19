@@ -1,19 +1,42 @@
-#include <ApplicationServices/ApplicationServices.h>
 #include <fstream>
 #include <iostream>
 #include "utils.h"
 #include "detection.h"
 #include <string>
 
+#ifdef __linux__
 
-Cursor getCursorPosition() {
-    Cursor cursor;
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+
+MousePosition getCursorPosition() {
+    Display* display = XOpenDisplay(nullptr);
+    Window root = DefaultRootWindow(display);
+    XEvent event;
+    XQueryPointer(display, root, &event.xbutton.root, &event.xbutton.window,
+                  &event.xbutton.x_root, &event.xbutton.y_root,
+                  &event.xbutton.x, &event.xbutton.y,
+                  &event.xbutton.state);
+    XCloseDisplay(display);
+    MousePosition cursor;
+    cursor.x = event.xbutton.x;
+    cursor.y = event.xbutton.y;
+    return cursor;
+}
+
+#elif __APPLE__
+#include <ApplicationServices/ApplicationServices.h>
+
+MousePosition getCursorPosition() {
+    MousePosition cursor;
     CGEventRef event = CGEventCreate(NULL);
     CGPoint cursorPos = CGEventGetLocation(event);
     cursor.x = cursorPos.x;
     cursor.y = cursorPos.y;
     return cursor;
 }
+
+#endif
 
 void writeToFile(const std::string& text, DetectedWords* recWordsPtr) {
     std::ofstream file("saved.txt", std::ios::app); // Open the file in append mode

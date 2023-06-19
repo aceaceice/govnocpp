@@ -2,13 +2,13 @@
 #define UTILS_H
 #include <string>
 #include "detection.h"
-struct Cursor
+struct MousePosition
 {
     int x;
     int y;    /* data */
 };
 
-Cursor getCursorPosition();
+MousePosition getCursorPosition();
 
 void writeToFile(const std::string& text, DetectedWords* recWordsPtr);
 #endif
