@@ -8,7 +8,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-
+std::string savedFilePath = "/home/jasos/Documents/saved.txt";
 MousePosition getCursorPosition() {
     Display* display = XOpenDisplay(nullptr);
     Window root = DefaultRootWindow(display);
@@ -26,7 +26,7 @@ MousePosition getCursorPosition() {
 
 #elif __APPLE__
 #include <ApplicationServices/ApplicationServices.h>
-
+std::string savedFilePath = "/Users/jasos/Documents/saved.txt";
 MousePosition getCursorPosition() {
     MousePosition cursor;
     CGEventRef event = CGEventCreate(NULL);
@@ -39,7 +39,7 @@ MousePosition getCursorPosition() {
 #endif
 
 void writeToFile(const std::string& text, DetectedWords* recWordsPtr) {
-    std::ofstream file("saved.txt", std::ios::app); // Open the file in append mode
+    std::ofstream file(savedFilePath, std::ios::app); // Open the file in append mode
 
     if (file.is_open()) {
         file << text << std::endl; // Write the text to the file
