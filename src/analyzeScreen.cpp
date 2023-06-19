@@ -127,10 +127,9 @@ cv::Mat image(height, width, CV_8UC4, imageX->data);
     cv::threshold(grayImage, thresholdedImage, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
     return thresholdedImage;
 
-            float scale = 1;
 
 }
-
+            float scale = 1;
 
 
 #elif __APPLE__

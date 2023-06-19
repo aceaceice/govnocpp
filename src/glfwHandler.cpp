@@ -13,13 +13,17 @@ std::string translationText = "";
 bool shouldExit = false;
 DetectedWords* recWordsPtr;
 
+int screenWidth;
+int screenHeight;
+
+
 // Function to handle keyboard events
 void drawBoundingBox(int x1, int y1, int x2, int y2) {
     // Set up the projection matrix to use pixel coordinates
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glLoadIdentity();
-    glOrtho(0, 1440, 900, 0, -1, 1); // Replace with your window size
+    glOrtho(0, screenWidth, screenHeight, 0, -1, 1); // Replace with your window size
     
     // Set up the modelview matrix to draw in 2D
     glMatrixMode(GL_MODELVIEW);
@@ -43,12 +47,17 @@ void drawBoundingBox(int x1, int y1, int x2, int y2) {
 }
 
 
+#ifdef __linux__
+int superKey = GLFW_MOD_CONTROL;
+#elif __APPLE__
+int superKey = GLFW_MOD_SUPER;
+#endif
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
     RecognizedWordData* recWordsData = static_cast<RecognizedWordData*>(glfwGetWindowUserPointer(window));
     DetectedWords* recWordsPtr = recWordsData->recWords;
     DetectedWords& recWords = *recWordsPtr;
-     bool super_pressed = mods & GLFW_MOD_SUPER;
+     bool super_pressed = mods & superKey;
     if (action == GLFW_PRESS && super_pressed) {
         switch(key) {
             case GLFW_KEY_E: {
@@ -82,6 +91,7 @@ void errorCallback(int error, const char* description)
     printf("GLFW Error %d: %s\n", error, description);
 }
 
+
 // Set the error callback
 int run_detection() { 
     
@@ -108,7 +118,8 @@ glfwSetErrorCallback(errorCallback);
     // Create a GLFW window
     // GLFWwindow* window = glfwCreateWindow(2560, 1440, "Keyboard Events", NULL, NULL);
     const GLFWvidmode* videoMode = glfwGetVideoMode(primaryMonitor);
-    std::cout << videoMode->width << " " << videoMode->height << std::endl;
+   screenWidth = videoMode->width;
+    screenHeight = videoMode->height;
     std::cout << primaryMonitor << std::endl;
     GLFWwindow* window = glfwCreateWindow(videoMode->width, videoMode->height, "Fullscreen Window", primaryMonitor, NULL);
     std::cout << "GLFW window created" << std::endl;
