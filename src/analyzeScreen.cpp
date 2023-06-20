@@ -189,7 +189,8 @@ DetectedWords analyzeScreen() {
             float confidence = iter->Confidence(level);
             int x1, y1, x2, y2;
             iter->BoundingBox(level, &x1, &y1, &x2, &y2);
-            if (confidence > 0.8){
+            if (confidence > 0.95){
+            std::cout << word << " " << confidence << " " << id << " " << std::endl;
             recWords.addWord(word, confidence, id, x1*scale,x2*scale,y1*scale,y2*scale);
             id++;
             }
